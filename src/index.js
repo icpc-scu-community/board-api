@@ -4,6 +4,7 @@ const { MongoClient } = require('mongodb');
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const moment = require('moment');
 
 const { MONGODB_URI, PORT = 5000 } = process.env;
 
@@ -172,12 +173,26 @@ const parseVerdict = verdict => {
         return t1.states.solved < t2.states.solved;
       });
 
+      // fetch metadata
+      const metadata = (
+        await db
+          .collection('scraper')
+          .find({}, { projection: { _id: 0, lastUpdate: 1 } })
+          .toArray()
+      )[0];
+
+      if (metadata.lastUpdate !== undefined) {
+        metadata.lastUpdate = moment(parseInt(metadata.lastUpdate)).fromNow();
+      }
+
       // response
       const response = {
         trainees,
         sheets,
-        submissions
+        submissions,
+        metadata
       };
+
       return res.json(response);
     } catch (err) {
       next(err);
