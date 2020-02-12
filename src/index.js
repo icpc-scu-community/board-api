@@ -83,7 +83,7 @@ const parseVerdict = verdict => {
         .find(
           {
             contestId: { $in: reqSheets },
-            name: { $in: handles }
+            name: { $in: handles.map(handle => new RegExp(`^${handle}$`, 'i')) }
           },
           {
             projection: {
@@ -97,6 +97,10 @@ const parseVerdict = verdict => {
           }
         )
         .toArray();
+
+      const correctHandles = storedSubmissions
+        .map(({ name }) => name)
+        .filter((v, i, a) => a.indexOf(v) === i); // unique
 
       // process data
       const sheetsMap = {};
@@ -114,13 +118,19 @@ const parseVerdict = verdict => {
       });
 
       const submissions = {};
-      handles.forEach(handle => (submissions[handle] = {}));
+      correctHandles.forEach(handle => (submissions[handle] = {}));
 
       const traineesMap = {};
       const trainees = reqTrainees.map((trainee, index) => {
-        traineesMap[trainee.handle] = index;
+        const correctHandle =
+          correctHandles.find(
+            ch => trainee.handle.toLowerCase() === ch.toLowerCase()
+          ) || trainee.handle;
+
+        traineesMap[correctHandle] = index;
         return {
           ...trainee,
+          handle: correctHandle,
           states: { solved: 0, tried: 0, submissions: 0 }
         };
       });
