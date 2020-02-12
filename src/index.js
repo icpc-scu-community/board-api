@@ -72,9 +72,8 @@ const { MONGODB_URI, PORT = 5000 } = process.env;
         )
         .toArray();
 
-      const correctHandles = storedSubmissions // to avoid letters case issue
-        .map(({ name }) => name)
-        .filter((val, index, arr) => arr.indexOf(val) === index); // unique
+      // unique array of handles from the stored submissions to avoid letters case issue
+      const correctHandles = [...new Set(storedSubmissions.map(({ name }) => name))];
 
       // process data
       // 1. sheets
