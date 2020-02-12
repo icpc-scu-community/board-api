@@ -176,7 +176,7 @@ const parseVerdict = verdict => {
       // fetch metadata
       const metadata = (
         await db
-          .collection('scraper')
+          .collection('scrapers')
           .find({}, { projection: { _id: 0, lastUpdate: 1 } })
           .toArray()
       )[0];
