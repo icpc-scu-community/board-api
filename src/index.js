@@ -168,16 +168,11 @@ const { MONGODB_URI, PORT = 5000 } = process.env;
       });
 
       // fetch metadata
-      const metadata = (
-        await db
-          .collection("scrapers")
-          .find({}, { projection: { _id: 0, lastUpdate: 1 } })
-          .toArray()
-      )[0];
+      const metadata = await db.collection("scrapers").findOne({}, { projection: { _id: 0, lastUpdate: 1 } });
 
-      if (metadata.lastUpdate !== undefined) {
+      if (metadata && metadata.lastUpdate !== undefined) {
         metadata.lastUpdate = moment(parseInt(metadata.lastUpdate)).fromNow();
-      }
+      } else metadata = { lastUpdate: "N/A" };
 
       // response
       const response = {
