@@ -167,11 +167,11 @@ const parseVerdict = verdict => {
 
       // sort first by solved (desc) then by name (asc)
       trainees.sort((t1, t2) => {
-        if (t1.states.solved < t2.states.solved) return 1;
-        else if (t1.states.solved < t2.states.solved) return -1;
+        if (t1.states.solved > t2.states.solved) return -1;
+        else if (t1.states.solved < t2.states.solved) return 1;
         else {
           if (t1.states.submissions < t2.states.submissions) return -1;
-          else if (t1.states.submissions < t2.states.submissions) return 1;
+          else if (t1.states.submissions > t2.states.submissions) return 1;
           else {
             return t1.name
               .trim()
