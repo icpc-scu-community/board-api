@@ -72,9 +72,8 @@ const { MONGODB_URI, PORT = 5000 } = process.env;
         )
         .toArray();
 
-      const correctHandles = storedSubmissions // to avoid letters case issue
-        .map(({ name }) => name)
-        .filter((val, index, arr) => arr.indexOf(val) === index); // unique
+      // unique array of handles from the stored submissions to avoid letters case issue
+      const correctHandles = [...new Set(storedSubmissions.map(({ name }) => name))];
 
       // process data
       // 1. sheets
@@ -149,33 +148,31 @@ const { MONGODB_URI, PORT = 5000 } = process.env;
         obj.list.push(submissionListItem);
       }
 
-      // sort first by solved (desc) then by name (asc)
+      // sort first by solved (desc)
+      // => if solved==0, sort by who tried more. else by who tried less
+      // then by name (asc)
+      const smaller_first = (num1, num2) => (num1 < num2 ? -1 : num1 > num2 ? 1 : 0);
+      const greater_first = (num1, num2) => smaller_first(num2, num1);
+
       trainees.sort((t1, t2) => {
-        if (t1.states.solved > t2.states.solved) return -1;
-        else if (t1.states.solved < t2.states.solved) return 1;
-        else {
-          if (t1.states.submissions < t2.states.submissions) return -1;
-          else if (t1.states.submissions > t2.states.submissions) return 1;
-          else {
-            return t1.name
-              .trim()
-              .toLowerCase()
-              .localeCompare(t2.name.trim().toLowerCase());
-          }
-        }
+        if (t1.states.solved !== t2.states.solved) return greater_first(t1.states.solved, t2.states.solved);
+        // t1_solved === t2_solved === 0
+        if (t1.states.solved === 0) return greater_first(t1.states.submissions, t2.states.submissions);
+        // t1_solved === t2_solved !== 0
+        if (t1.states.submissions !== t2.states.submissions) return smaller_first(t1.states.submissions, t2.states.submissions);
+        // t1_solved === t2_solved && t1_submissions === t2_submissions
+        return t1.name
+          .trim()
+          .toLowerCase()
+          .localeCompare(t2.name.trim().toLowerCase());
       });
 
       // fetch metadata
-      const metadata = (
-        await db
-          .collection("scrapers")
-          .find({}, { projection: { _id: 0, lastUpdate: 1 } })
-          .toArray()
-      )[0];
+      const metadata = await db.collection("scrapers").findOne({}, { projection: { _id: 0, lastUpdate: 1 } });
 
-      if (metadata.lastUpdate !== undefined) {
+      if (metadata && metadata.lastUpdate !== undefined) {
         metadata.lastUpdate = moment(parseInt(metadata.lastUpdate)).fromNow();
-      }
+      } else metadata = { lastUpdate: "N/A" };
 
       // response
       const response = {
