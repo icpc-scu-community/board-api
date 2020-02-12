@@ -165,6 +165,7 @@ const parseVerdict = verdict => {
         obj.list.push(submissionListItem);
       }
 
+      console.log(trainees);
       // sort first by solved (desc) then by name (asc)
       trainees.sort((t1, t2) => {
         if (t1.states.solved === t2.states.solved) {
@@ -172,6 +173,7 @@ const parseVerdict = verdict => {
         }
         return t1.states.solved < t2.states.solved;
       });
+      console.log(trainees);
 
       // fetch metadata
       const metadata = (
