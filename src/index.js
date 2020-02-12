@@ -165,15 +165,19 @@ const parseVerdict = verdict => {
         obj.list.push(submissionListItem);
       }
 
-      console.log(trainees);
       // sort first by solved (desc) then by name (asc)
       trainees.sort((t1, t2) => {
         if (t1.states.solved === t2.states.solved) {
-          return t1.name.trim().toLowerCase() > t2.name.trim().toLowerCase();
+          return t1.name
+            .trim()
+            .toLowerCase()
+            .localeCompare(t2.name.trim().toLowerCase());
+        } else if (t1.states.solved < t2.states.solved) {
+          return 1;
+        } else {
+          return -1;
         }
-        return t1.states.solved < t2.states.solved;
       });
-      console.log(trainees);
 
       // fetch metadata
       const metadata = (
