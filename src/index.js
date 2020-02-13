@@ -6,6 +6,17 @@ const morgan = require("morgan");
 const cors = require("cors");
 const { MongoClient } = require("mongodb");
 const { parseVerdict } = require("./utils");
+const { promisify } = require("util");
+const redis = require("redis");
+
+const redisClient = redis.createClient(process.env.REDIS_URL);
+
+redisClient.on("error", function(error) {
+  console.error(error);
+});
+
+const rGetAsync = promisify(redisClient.get).bind(redisClient);
+const rSetAsync = promisify(redisClient.set).bind(redisClient);
 
 const { MONGODB_URI, PORT = 5000 } = process.env;
 
@@ -29,15 +40,24 @@ const { MONGODB_URI, PORT = 5000 } = process.env;
 
   app.get("/parse", async (req, res, next) => {
     try {
+      // fetch metadata
+      const metadata = await db.collection("scrapers").findOne({}, { projection: { _id: 0, lastUpdate: 1 } });
+      const lastUpdate = metadata ? metadata.lastUpdate : "N/A";
+      if (metadata && metadata.lastUpdate !== undefined) {
+        metadata.lastUpdate = moment(parseInt(metadata.lastUpdate)).fromNow();
+      } else metadata = { lastUpdate: "N/A" };
+
       const traineesListJSONUrl = req.query["trainees-list"];
       const sheetsListJSONUrl = req.query["sheets-list"];
-
       // check links existence
       if (!traineesListJSONUrl || !sheetsListJSONUrl) {
         return res.status(400).json({
           message: "trainees-list or sheets-list query not found"
         });
       }
+      const HASH_KEY = `${lastUpdate}-${traineesListJSONUrl}-${sheetsListJSONUrl}`;
+      const redis_response = await rGetAsync(HASH_KEY);
+      if (redis_response) return res.json(JSON.parse(redis_response));
 
       // start fetch json data
       let reqTrainees, reqSheets;
@@ -167,13 +187,6 @@ const { MONGODB_URI, PORT = 5000 } = process.env;
           .localeCompare(t2.name.trim().toLowerCase());
       });
 
-      // fetch metadata
-      const metadata = await db.collection("scrapers").findOne({}, { projection: { _id: 0, lastUpdate: 1 } });
-
-      if (metadata && metadata.lastUpdate !== undefined) {
-        metadata.lastUpdate = moment(parseInt(metadata.lastUpdate)).fromNow();
-      } else metadata = { lastUpdate: "N/A" };
-
       // response
       const response = {
         trainees,
@@ -182,6 +195,7 @@ const { MONGODB_URI, PORT = 5000 } = process.env;
         metadata
       };
 
+      await rSetAsync(HASH_KEY, JSON.stringify(response));
       return res.json(response);
     } catch (err) {
       next(err);
