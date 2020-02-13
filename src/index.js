@@ -1,26 +1,30 @@
 require("dotenv").config();
+const { promisify } = require("util");
 const moment = require("moment");
 const rp = require("request-promise");
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
+const redis = require("redis");
 const { MongoClient } = require("mongodb");
 const { parseVerdict } = require("./utils");
-const { promisify } = require("util");
-const redis = require("redis");
 
-const redisClient = redis.createClient(process.env.REDIS_URL);
-
-redisClient.on("error", function(error) {
-  console.error(error);
-});
-
-const rGetAsync = promisify(redisClient.get).bind(redisClient);
-const rSetAsync = promisify(redisClient.set).bind(redisClient);
-
-const { MONGODB_URI, PORT = 5000 } = process.env;
+const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
 (async () => {
+  // config redius
+  let redisClient, rGetAsync, rSetAsync;
+  if (REDIS_URL) {
+    redisClient = redis.createClient(REDIS_URL);
+    redisClient.on("error", error => {
+      console.error(error.stack);
+      process.exit(1);
+    });
+
+    rGetAsync = promisify(redisClient.get).bind(redisClient);
+    rSetAsync = promisify(redisClient.set).bind(redisClient);
+  }
+
   // connect to db
   const client = await new MongoClient(MONGODB_URI, {
     useUnifiedTopology: true
@@ -42,11 +46,14 @@ const { MONGODB_URI, PORT = 5000 } = process.env;
     try {
       // fetch metadata
       const metadata = await db.collection("scrapers").findOne({}, { projection: { _id: 0, lastUpdate: 1 } });
-      const lastUpdate = metadata ? metadata.lastUpdate : "N/A";
       if (metadata && metadata.lastUpdate !== undefined) {
         metadata.lastUpdate = moment(parseInt(metadata.lastUpdate)).fromNow();
-      } else metadata = { lastUpdate: "N/A" };
+      } else {
+        metadata = { lastUpdate: "N/A" };
+      }
+      const { lastUpdate } = metadata;
 
+      // query links
       const traineesListJSONUrl = req.query["trainees-list"];
       const sheetsListJSONUrl = req.query["sheets-list"];
       // check links existence
@@ -55,9 +62,15 @@ const { MONGODB_URI, PORT = 5000 } = process.env;
           message: "trainees-list or sheets-list query not found"
         });
       }
+
+      // stop early (return cached version if possible)
       const HASH_KEY = `${lastUpdate}-${traineesListJSONUrl}-${sheetsListJSONUrl}`;
-      const redis_response = await rGetAsync(HASH_KEY);
-      if (redis_response) return res.json(JSON.parse(redis_response));
+      if (REDIS_URL) {
+        const redis_response = await rGetAsync(HASH_KEY);
+        if (redis_response) {
+          return res.json(JSON.parse(redis_response));
+        }
+      }
 
       // start fetch json data
       let reqTrainees, reqSheets;
@@ -195,7 +208,11 @@ const { MONGODB_URI, PORT = 5000 } = process.env;
         metadata
       };
 
-      await rSetAsync(HASH_KEY, JSON.stringify(response));
+      // cache (if possible)
+      if (REDIS_URL) {
+        await rSetAsync(HASH_KEY, JSON.stringify(response));
+      }
+
       return res.json(response);
     } catch (err) {
       next(err);
