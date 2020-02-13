@@ -46,12 +46,12 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
     try {
       // fetch metadata
       const metadata = await db.collection("scrapers").findOne({}, { projection: { _id: 0, lastUpdate: 1 } });
+      const lastUpdate = metadata ? metadata.lastUpdate : "N/A";
       if (metadata && metadata.lastUpdate !== undefined) {
         metadata.lastUpdate = moment(parseInt(metadata.lastUpdate)).fromNow();
       } else {
         metadata = { lastUpdate: "N/A" };
       }
-      const { lastUpdate } = metadata;
 
       // query links
       const traineesListJSONUrl = req.query["trainees-list"];
@@ -68,7 +68,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
       if (REDIS_URL) {
         const redis_response = await rGetAsync(HASH_KEY);
         if (redis_response) {
-          return res.json(JSON.parse(redis_response));
+          return res.json({ ...JSON.parse(redis_response), metadata }); // not cached metadata
         }
       }
 
