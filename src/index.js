@@ -8,7 +8,8 @@ const { MongoClient } = require("mongodb");
 const { parseVerdict } = require("./utils");
 const { promisify } = require("util");
 const redis = require("redis");
-const redisClient = redis.createClient();
+
+const redisClient = redis.createClient(process.env.REDIS_URL);
 
 redisClient.on("error", function(error) {
   console.error(error);
