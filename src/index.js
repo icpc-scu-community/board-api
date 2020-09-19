@@ -16,7 +16,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
   let redisClient, rGetAsync, rSetAsync;
   if (REDIS_URL) {
     redisClient = redis.createClient(REDIS_URL);
-    redisClient.on("error", error => {
+    redisClient.on("error", (error) => {
       console.error(error.stack);
       process.exit(1);
     });
@@ -27,7 +27,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
   // connect to db
   const client = await new MongoClient(MONGODB_URI, {
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
   }).connect();
   const db = client.db();
 
@@ -45,7 +45,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
   app.get("/parse", async (req, res, next) => {
     try {
       // fetch metadata
-      const metadata = await db.collection("scrapers").findOne({}, { projection: { _id: 0, lastUpdate: 1 } });
+      let metadata = await db.collection("scrapers").findOne({}, { projection: { _id: 0, lastUpdate: 1 } });
       const lastUpdate = metadata ? metadata.lastUpdate : "N/A";
       if (metadata && metadata.lastUpdate !== undefined) {
         metadata.lastUpdate = moment(parseInt(metadata.lastUpdate)).fromNow();
@@ -59,7 +59,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
       // check links existence
       if (!traineesListJSONUrl || !sheetsListJSONUrl) {
         return res.status(400).json({
-          message: "trainees-list or sheets-list query not found"
+          message: "trainees-list or sheets-list query not found",
         });
       }
 
@@ -79,7 +79,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
         [reqTrainees, reqSheets] = response;
       } catch (error) {
         return res.status(400).json({
-          message: "invalid trainees-list or sheets-list urls"
+          message: "invalid trainees-list or sheets-list urls",
         });
       }
 
@@ -88,7 +88,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
         ({ name, handle }) => typeof name === "string" && name.trim() !== "" && typeof handle === "string" && handle.trim() !== ""
       );
 
-      reqSheets = reqSheets.filter(sheetId => typeof sheetId === "string" && sheetId.trim() !== "");
+      reqSheets = reqSheets.filter((sheetId) => typeof sheetId === "string" && sheetId.trim() !== "");
 
       // fetch submissions
       const handlesRegExps = reqTrainees.map(({ handle }) => new RegExp(`^${handle}$`, "i"));
@@ -97,10 +97,10 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
         .find(
           {
             contestId: { $in: reqSheets },
-            name: { $in: handlesRegExps }
+            name: { $in: handlesRegExps },
           },
           {
-            projection: { _id: 0, contestId: 1, id: 1, name: 1, problem: 1, verdict: 1 }
+            projection: { _id: 0, contestId: 1, id: 1, name: 1, problem: 1, verdict: 1 },
           }
         )
         .toArray();
@@ -112,7 +112,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
       // 1. sheets
       const sheetsMap = {};
       const sheets = reqSheets.map((sheetId, sheetIndex) => {
-        const sheet = storedSheets.find(sheet => sheet.id === sheetId);
+        const sheet = storedSheets.find((sheet) => sheet.id === sheetId);
         sheetsMap[sheetId] = { sheetIndex };
 
         return {
@@ -121,24 +121,24 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
             sheetsMap[sheetId][problem.id] = problemIndex;
 
             return { ...problem, solved: 0 };
-          })
+          }),
         };
       });
 
       // 2. submissions
       const submissions = {};
-      correctHandles.forEach(handle => (submissions[handle] = {}));
+      correctHandles.forEach((handle) => (submissions[handle] = {}));
 
       // 3. trainees
       const traineesMap = {};
       const trainees = reqTrainees.map((trainee, index) => {
-        const handle = correctHandles.find(correctHandle => correctHandle.toLowerCase() === trainee.handle.toLowerCase()) || trainee.handle;
+        const handle = correctHandles.find((correctHandle) => correctHandle.toLowerCase() === trainee.handle.toLowerCase()) || trainee.handle;
         traineesMap[handle] = index;
 
         return {
           ...trainee,
           handle,
-          states: { solved: 0, tried: 0, submissions: 0 }
+          states: { solved: 0, tried: 0, submissions: 0 },
         };
       });
 
@@ -154,14 +154,14 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
         const submissionListItem = {
           id: submissionId,
           message: verdict,
-          verdict: shortVerdict
+          verdict: shortVerdict,
         };
 
         if (submissions[handle][uniqueId] === undefined) {
           submissions[handle][uniqueId] = {
             verdict: "",
             triesBeforeAC: 0,
-            list: []
+            list: [],
           };
           trainees[traineeIndex].states.tried++;
         }
@@ -194,10 +194,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
         // t1_solved === t2_solved !== 0
         if (t1.states.submissions !== t2.states.submissions) return smaller_first(t1.states.submissions, t2.states.submissions);
         // t1_solved === t2_solved && t1_submissions === t2_submissions
-        return t1.name
-          .trim()
-          .toLowerCase()
-          .localeCompare(t2.name.trim().toLowerCase());
+        return t1.name.trim().toLowerCase().localeCompare(t2.name.trim().toLowerCase());
       });
 
       // response
@@ -205,7 +202,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
         trainees,
         sheets,
         submissions,
-        metadata
+        metadata,
       };
 
       // cache (if possible)
