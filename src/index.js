@@ -233,13 +233,13 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
   });
 
   // 404
-  app.get("*", (req, res) => {
+  app.use("*", (_, res) => {
     res.status(404);
     res.json({ message: "Not found" });
   });
 
   // 500
-  app.use((err, req, res, next) => {
+  app.use((err, _, res) => {
     console.error(err.stack);
     res.status(500).send("Something went wrong!");
   });
