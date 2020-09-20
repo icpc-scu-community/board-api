@@ -47,9 +47,8 @@ e.g. https://api.jsonbin.io/b/5f67d83e7243cd7e8240387c
 ---
 
 Example:
-<a href="https://bit.ly/3mFyAyU">
-<i>https://icpc-scu-board-api.herokuapp.com/parse</i>?<b>trainees-list</b>=https://api.jsonbin.io/b/5f67d6bd302a837e956a47bf&<b>sheets-list</b>=https://api.jsonbin.io/b/5f67d83e7243cd7e8240387c
-</a>
+
+https://icpc-scu-board-api.herokuapp.com/parse?trainees-list=https://api.jsonbin.io/b/5f67d6bd302a837e956a47bf&sheets-list=https://api.jsonbin.io/b/5f67d83e7243cd7e8240387c
 
 
 Open the URL to see the response.
