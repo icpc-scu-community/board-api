@@ -78,9 +78,22 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
       // start fetch json data
       let reqTrainees, reqSheets;
+      if (REDIS_URL) {
+        // get json data from cache
+        const response = await Promise.all([rGetAsync(traineesListJSONUrl), rGetAsync(sheetsListJSONUrl)]);
+        [reqTrainees, reqSheets] = response.map((e) => JSON.parse(e));
+      }
+
       try {
-        const response = await Promise.all([rp.get({ uri: traineesListJSONUrl, json: true }), rp.get({ uri: sheetsListJSONUrl, json: true })]);
-        [reqTrainees, reqSheets] = response;
+        if (!reqSheets || !reqSheets) {
+          const response = await Promise.all([rp.get({ uri: traineesListJSONUrl, json: true }), rp.get({ uri: sheetsListJSONUrl, json: true })]);
+          [reqTrainees, reqSheets] = response;
+          if (REDIS_URL) {
+            // cache json data
+            rSetAsync(traineesListJSONUrl, JSON.stringify(reqTrainees));
+            rSetAsync(sheetsListJSONUrl, JSON.stringify(reqSheets));
+          }
+        }
       } catch (error) {
         return res.status(400).json({
           message: "invalid trainees-list or sheets-list urls",
