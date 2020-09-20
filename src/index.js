@@ -85,7 +85,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
       }
 
       try {
-        if (!reqSheets || !reqSheets) {
+        if (!reqSheets || !reqTrainees) {
           const response = await Promise.all([rp.get({ uri: traineesListJSONUrl, json: true }), rp.get({ uri: sheetsListJSONUrl, json: true })]);
           [reqTrainees, reqSheets] = response;
           if (REDIS_URL) {
