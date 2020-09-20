@@ -223,7 +223,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
       // cache (if possible)
       if (REDIS_URL) {
-        await rSetAsync(HASH_KEY, JSON.stringify(response));
+        rSetAsync(HASH_KEY, JSON.stringify(response)).catch((e) => console.error(e.message));
       }
 
       return res.json(response);
