@@ -13,7 +13,7 @@ const { parseVerdict } = require("./utils");
 const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
 (async () => {
-  // config redius
+  // connect to Redis
   let redisClient, rGetAsync, rSetAsync;
   if (REDIS_URL) {
     redisClient = redis.createClient(REDIS_URL);
@@ -26,7 +26,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
     rSetAsync = promisify(redisClient.set).bind(redisClient);
   }
 
-  // connect to db
+  // connect to MongoDB
   const client = await new MongoClient(MONGODB_URI, {
     useUnifiedTopology: true,
   }).connect();
