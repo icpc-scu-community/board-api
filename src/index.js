@@ -6,6 +6,7 @@ const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 const redis = require("redis");
+const compression = require("compression");
 const { MongoClient } = require("mongodb");
 const { parseVerdict } = require("./utils");
 
@@ -39,6 +40,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
   // server stack
   const app = express();
+  app.use(compression());
   app.use(cors());
   app.use(morgan("dev"));
 
