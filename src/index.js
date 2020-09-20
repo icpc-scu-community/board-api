@@ -14,7 +14,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
 (async () => {
   // connect to Redis
-  let redisClient, rGetAsync, rSetAsync;
+  let redisClient, rGetAsync, rSetAsync, rSetexAsync;
   if (REDIS_URL) {
     redisClient = redis.createClient(REDIS_URL);
     redisClient.on("error", (error) => {
@@ -25,6 +25,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
     rGetAsync = promisify(redisClient.get).bind(redisClient);
     rSetAsync = promisify(redisClient.set).bind(redisClient);
+    rSetexAsync = promisify(redisClient.setex).bind(redisClient);
   }
 
   // connect to MongoDB
@@ -223,7 +224,8 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
       // cache (if possible)
       if (REDIS_URL) {
-        rSetAsync(HASH_KEY, JSON.stringify(response)).catch((e) => console.error(e.message));
+        // expires (key-value removed) after 15 minutes
+        rSetexAsync(HASH_KEY, 15 * 60, JSON.stringify(response)).catch((e) => console.error(e.message));
       }
 
       return res.json(response);
