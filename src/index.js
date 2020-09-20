@@ -100,12 +100,11 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
         });
       }
 
-      // validate (filter)
-      reqTrainees = reqTrainees.filter(
-        ({ name, handle }) => typeof name === "string" && name.trim() !== "" && typeof handle === "string" && handle.trim() !== ""
-      );
+      const isTrimedString = (str) => typeof str === "string" && str.trim() !== "";
 
-      reqSheets = reqSheets.filter((sheetId) => typeof sheetId === "string" && sheetId.trim() !== "");
+      // validate (filter)
+      reqTrainees = reqTrainees.filter(({ name, handle }) => isTrimedString(name) && isTrimedString(handle));
+      reqSheets = reqSheets.filter((sheetId) => isTrimedString(sheetId));
 
       // fetch submissions
       const handlesRegExps = reqTrainees.map(({ handle }) => new RegExp(`^${handle}$`, "i"));
