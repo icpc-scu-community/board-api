@@ -21,6 +21,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
       console.error(error.stack);
       process.exit(1);
     });
+    redisClient.once("connect", () => console.log("Redis connected!"));
 
     rGetAsync = promisify(redisClient.get).bind(redisClient);
     rSetAsync = promisify(redisClient.set).bind(redisClient);
@@ -31,6 +32,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
     useUnifiedTopology: true,
   }).connect();
   const db = client.db();
+  console.log("MongoDB connected!");
 
   // load sheets
   const storedSheets = await db
