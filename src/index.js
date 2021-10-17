@@ -12,6 +12,8 @@ const { parseVerdict } = require("./utils");
 
 const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
+
+app.use(cors())
 (async () => {
   // connect to Redis
   let redisClient, rGetAsync, rSetAsync, rSetexAsync;
