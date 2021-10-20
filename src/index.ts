@@ -1,27 +1,28 @@
-require("dotenv").config();
-const { promisify } = require("util");
-const moment = require("moment");
-const rp = require("request-promise");
-const express = require("express");
-const morgan = require("morgan");
-const cors = require("cors");
-const redis = require("redis");
-const compression = require("compression");
-const { MongoClient } = require("mongodb");
-const { parseVerdict } = require("./utils");
+require('dotenv').config();
+const { promisify } = require('util');
+const moment = require('moment');
+const rp = require('request-promise');
+const express = require('express');
+const morgan = require('morgan');
+const cors = require('cors');
+const redis = require('redis');
+const compression = require('compression');
+const { MongoClient } = require('mongodb');
+const { parseVerdict } = require('./utils');
 
 const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
 (async () => {
   // connect to Redis
   let redisClient, rGetAsync, rSetAsync, rSetexAsync;
+
   if (REDIS_URL) {
     redisClient = redis.createClient(REDIS_URL);
-    redisClient.on("error", (error) => {
+    redisClient.on('error', (error) => {
       console.error(error.stack);
       process.exit(1);
     });
-    redisClient.once("connect", () => console.log("Redis connected!"));
+    redisClient.once('connect', () => console.log('Redis connected!'));
 
     rGetAsync = promisify(redisClient.get).bind(redisClient);
     rSetAsync = promisify(redisClient.set).bind(redisClient);
@@ -33,11 +34,11 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
     useUnifiedTopology: true,
   }).connect();
   const db = client.db();
-  console.log("MongoDB connected!");
+  console.log('MongoDB connected!');
 
   // load sheets
   const storedSheets = await db
-    .collection("sheets")
+    .collection('sheets')
     .find({}, { projection: { _id: 0 } })
     .toArray();
 
@@ -45,26 +46,31 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
   const app = express();
   app.use(compression());
   app.use(cors());
-  app.use(morgan("dev"));
+  app.use(morgan('dev'));
 
-  app.get("/parse", async (req, res, next) => {
+  app.get('/parse', async (req, res, next) => {
     try {
       // fetch metadata
-      let metadata = await db.collection("scrapers").findOne({}, { projection: { _id: 0, lastUpdate: 1 } });
-      const lastUpdate = metadata ? metadata.lastUpdate : "N/A";
+      let metadata = await db.collection('scrapers').findOne(
+        {},
+        {
+          projection: { _id: 0, lastUpdate: 1 },
+        },
+      );
+      const lastUpdate = metadata ? metadata.lastUpdate : 'N/A';
       if (metadata && metadata.lastUpdate !== undefined) {
         metadata.lastUpdate = moment(parseInt(metadata.lastUpdate)).fromNow();
       } else {
-        metadata = { lastUpdate: "N/A" };
+        metadata = { lastUpdate: 'N/A' };
       }
 
       // query links
-      const traineesListJSONUrl = req.query["trainees-list"];
-      const sheetsListJSONUrl = req.query["sheets-list"];
+      const traineesListJSONUrl = req.query['trainees-list'];
+      const sheetsListJSONUrl = req.query['sheets-list'];
       // check links existence
       if (!traineesListJSONUrl || !sheetsListJSONUrl) {
         return res.status(400).json({
-          message: "trainees-list or sheets-list query not found",
+          message: 'trainees-list or sheets-list query not found',
         });
       }
 
@@ -87,7 +93,10 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
       try {
         if (!reqSheets || !reqTrainees) {
-          const response = await Promise.all([rp.get({ uri: traineesListJSONUrl, json: true }), rp.get({ uri: sheetsListJSONUrl, json: true })]);
+          const response = await Promise.all([
+            rp.get({ uri: traineesListJSONUrl, json: true }),
+            rp.get({ uri: sheetsListJSONUrl, json: true }),
+          ]);
           [reqTrainees, reqSheets] = response;
           if (REDIS_URL) {
             // cache json data
@@ -97,28 +106,35 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
         }
       } catch (error) {
         return res.status(400).json({
-          message: "invalid trainees-list or sheets-list urls",
+          message: 'invalid trainees-list or sheets-list urls',
         });
       }
 
-      const isTrimedString = (str) => typeof str === "string" && str.trim() !== "";
+      const isTrimedString = (str) => typeof str === 'string' && str.trim() !== '';
 
       // validate (filter)
       reqTrainees = reqTrainees.filter(({ name, handle }) => isTrimedString(name) && isTrimedString(handle));
       reqSheets = reqSheets.filter((sheetId) => isTrimedString(sheetId));
 
       // fetch submissions
-      const handlesRegExps = reqTrainees.map(({ handle }) => new RegExp(`^${handle}$`, "i"));
+      const handlesRegExps = reqTrainees.map(({ handle }) => new RegExp(`^${handle}$`, 'i'));
       const storedSubmissions = await db
-        .collection("submissions")
+        .collection('submissions')
         .find(
           {
             contestId: { $in: reqSheets },
             name: { $in: handlesRegExps },
           },
           {
-            projection: { _id: 0, contestId: 1, id: 1, name: 1, problem: 1, verdict: 1 },
-          }
+            projection: {
+              _id: 0,
+              contestId: 1,
+              id: 1,
+              name: 1,
+              problem: 1,
+              verdict: 1,
+            },
+          },
         )
         .toArray();
 
@@ -149,7 +165,9 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
       // 3. trainees
       const traineesMap = {};
       const trainees = reqTrainees.map((trainee, index) => {
-        const handle = correctHandles.find((correctHandle) => correctHandle.toLowerCase() === trainee.handle.toLowerCase()) || trainee.handle;
+        const handle =
+          correctHandles.find((correctHandle) => correctHandle.toLowerCase() === trainee.handle.toLowerCase()) ||
+          trainee.handle;
         traineesMap[handle] = index;
 
         return {
@@ -162,7 +180,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
       for (let i = 0; i < storedSubmissions.length; i++) {
         const sub = storedSubmissions[i];
         const { id: submissionId, contestId, name: handle, verdict } = sub;
-        const problemId = sub.problem.split(" - ")[0];
+        const problemId = sub.problem.split(' - ')[0];
 
         const uniqueId = `${contestId}-${problemId}`;
         const shortVerdict = parseVerdict(verdict);
@@ -176,7 +194,7 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
         if (submissions[handle][uniqueId] === undefined) {
           submissions[handle][uniqueId] = {
-            verdict: "",
+            verdict: '',
             triesBeforeAC: 0,
             list: [],
           };
@@ -184,9 +202,9 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
         }
 
         const obj = submissions[handle][uniqueId];
-        if (obj.verdict !== "AC") {
-          if (shortVerdict === "AC") {
-            obj.verdict = "AC";
+        if (obj.verdict !== 'AC') {
+          if (shortVerdict === 'AC') {
+            obj.verdict = 'AC';
             trainees[traineeIndex].states.solved++;
             trainees[traineeIndex].states.tried--;
             sheets[sheetsMap[contestId].sheetIndex].problems[sheetsMap[contestId][problemId]].solved++;
@@ -205,11 +223,17 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
       const greater_first = (num1, num2) => smaller_first(num2, num1);
 
       trainees.sort((t1, t2) => {
-        if (t1.states.solved !== t2.states.solved) return greater_first(t1.states.solved, t2.states.solved);
+        if (t1.states.solved !== t2.states.solved) {
+          return greater_first(t1.states.solved, t2.states.solved);
+        }
         // t1_solved === t2_solved === 0
-        if (t1.states.solved === 0) return greater_first(t1.states.submissions, t2.states.submissions);
+        if (t1.states.solved === 0) {
+          return greater_first(t1.states.submissions, t2.states.submissions);
+        }
         // t1_solved === t2_solved !== 0
-        if (t1.states.submissions !== t2.states.submissions) return smaller_first(t1.states.submissions, t2.states.submissions);
+        if (t1.states.submissions !== t2.states.submissions) {
+          return smaller_first(t1.states.submissions, t2.states.submissions);
+        }
         // t1_solved === t2_solved && t1_submissions === t2_submissions
         return t1.name.trim().toLowerCase().localeCompare(t2.name.trim().toLowerCase());
       });
@@ -235,15 +259,15 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
   });
 
   // 404
-  app.use("*", (_, res) => {
+  app.use('*', (_, res) => {
     res.status(404);
-    res.json({ message: "Not found" });
+    res.json({ message: 'Not found' });
   });
 
   // 500
   app.use((err, _, res) => {
     console.error(err.stack);
-    res.status(500).send("Something went wrong!");
+    res.status(500).send('Something went wrong!');
   });
 
   // start server

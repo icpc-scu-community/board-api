@@ -1,8 +1,4 @@
-module.exports = {
-  /**
-   * @param {string} verdict
-   */
-  parseVerdict: (verdict) => {
+export function parseVerdict(verdict: string){
     const v = verdict.trim().toLowerCase();
     if (v === "accepted") return "AC";
     else if (v.includes("wrong answer")) return "WA";
@@ -11,5 +7,4 @@ module.exports = {
     else if (v.includes("runtime error")) return "RTE";
     else if (v.includes("compilation")) return "CE";
     else return "OTHERS";
-  },
-};
+  }
