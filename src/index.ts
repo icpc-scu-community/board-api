@@ -1,14 +1,13 @@
-require('dotenv').config();
-const { promisify } = require('util');
-const moment = require('moment');
-const rp = require('request-promise');
-const express = require('express');
-const morgan = require('morgan');
-const cors = require('cors');
-const redis = require('redis');
-const compression = require('compression');
-const { MongoClient } = require('mongodb');
-const { parseVerdict } = require('./utils');
+import { promisify } from 'util';
+import moment from 'moment';
+import rp from 'request-promise';
+import express from 'express';
+import morgan from 'morgan';
+import cors from 'cors';
+import redis from 'redis';
+import compression from 'compression';
+import { MongoClient } from 'mongodb';
+import { parseVerdict } from './utils';
 
 const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
