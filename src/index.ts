@@ -1,12 +1,13 @@
-import { promisify } from 'util';
-import moment from 'moment';
-import rp from 'request-promise';
-import express from 'express';
-import morgan from 'morgan';
-import cors from 'cors';
-import redis from 'redis';
 import compression from 'compression';
+import cors from 'cors';
+import express from 'express';
+import helmet from 'helmet';
+import moment from 'moment';
 import { MongoClient } from 'mongodb';
+import morgan from 'morgan';
+import redis from 'redis';
+import rp from 'request-promise';
+import { promisify } from 'util';
 import { parseVerdict } from './utils';
 
 const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
@@ -43,8 +44,9 @@ const { MONGODB_URI, REDIS_URL, PORT = 5000 } = process.env;
 
   // server stack
   const app = express();
-  app.use(compression());
+  app.use(helmet());
   app.use(cors());
+  app.use(compression());
   app.use(morgan('dev'));
 
   app.get('/parse', async (req, res, next) => {
