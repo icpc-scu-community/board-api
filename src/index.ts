@@ -15,7 +15,7 @@ const { PORT = 5000 } = process.env;
   app.use(compression());
   app.use(morgan('dev'));
 
-  app.get('/parse', getData);
+  app.get('/', getData);
 
   app.use('*', (_, res) => {
     res.status(404).json({ message: 'Not found' });
