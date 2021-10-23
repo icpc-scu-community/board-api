@@ -4,7 +4,7 @@ import db from '../mongo';
 import redisClient from '../redis';
 import { RequestCache } from '../RequestCache';
 import { SheetsMapType, SubmissionsType, TraineesListType, TraineesMapType } from '../types';
-import { parseVerdict, toSHA1base64 } from '../utils';
+import { toSHA1base64 } from '../utils';
 import { sheetsListValidator, traineesListValidator, urlValidator, validate } from '../validator';
 
 const queryParamsValidations = { 'trainees-list': urlValidator, 'sheets-list': urlValidator };
@@ -114,42 +114,33 @@ export default endpoint({ query: queryParamsValidations }, async (req) => {
   });
 
   for (let i = 0; i < storedSubmissions.length; i++) {
-    const sub = storedSubmissions[i];
-    const { id: submissionId, contestId, name: handle, verdict } = sub;
-    const problemId = sub.problem.split(' - ')[0];
+    const submission = storedSubmissions[i];
+    const { contestId, handle, isAc } = submission;
+    const problemLetter = submission.problem.split(' - ')[0]; // submission.problem is like "A - ProblemName"
 
-    const uniqueId = `${contestId}-${problemId}`;
-    const shortVerdict = parseVerdict(verdict);
+    const problemId = `${contestId}-${problemLetter}`; // problemId is like "123-A"
     const traineeIndex = traineesMap[handle];
 
-    const submissionListItem = {
-      id: submissionId,
-      message: verdict,
-      verdict: shortVerdict,
-    };
-
-    if (submissions[handle][uniqueId] === undefined) {
-      submissions[handle][uniqueId] = {
-        verdict: '',
+    if (submissions[handle][problemId] === undefined) {
+      submissions[handle][problemId] = {
+        isAc: false,
         triesBeforeAC: 0,
-        list: [],
       };
       trainees[traineeIndex].states.tried++;
     }
 
-    const obj = submissions[handle][uniqueId];
-    if (obj.verdict !== 'AC') {
-      if (shortVerdict === 'AC') {
-        obj.verdict = 'AC';
+    const obj = submissions[handle][problemId];
+    if (obj.isAc === false) {
+      if (isAc) {
+        obj.isAc = true;
         trainees[traineeIndex].states.solved++;
         trainees[traineeIndex].states.tried--;
-        sheets[sheetsMap[contestId].sheetIndex].problems[sheetsMap[contestId][problemId]].solved++;
+        sheets[sheetsMap[contestId].sheetIndex].problems[sheetsMap[contestId][problemLetter]].solved++;
       } else {
         obj.triesBeforeAC++;
       }
     }
     trainees[traineeIndex].states.submissions++;
-    obj.list.push(submissionListItem);
   }
   console.timeEnd('process data');
 

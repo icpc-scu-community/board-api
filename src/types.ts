@@ -1,9 +1,8 @@
 export type SubmissionsType = {
   [handle: string]: {
     [problemUniqueId: string]: {
-      verdict: string;
+      isAc: boolean;
       triesBeforeAC: number;
-      list: { id: string; message: string; verdict: string }[];
     };
   };
 };
