@@ -54,7 +54,7 @@ export class SubmissionsBuilder implements JsonBuilder {
     };
   }
 
-  async toJSON(): SubmissionResponse {
+  toJSON(): SubmissionResponse {
     return this._submissionsIndexer;
   }
 }
