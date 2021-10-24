@@ -31,7 +31,7 @@ export default endpoint({ query: { configs: urlValidator } }, async (req) => {
   } catch (error) {
     console.error(error);
     throw new HttpException(BAD_REQUEST, {
-      message: 'invalid trainees-list or sheets-list urls',
+      message: 'invalid configs URL',
     });
   }
   console.timeEnd('fetch json config');
@@ -41,9 +41,8 @@ export default endpoint({ query: { configs: urlValidator } }, async (req) => {
   configs = validate(configsValidator, configs);
   console.timeEnd('validate data in sheetsList & traineesList');
 
-  const responseBuilder = new ResponseBuilder(configs);
+  const responseBuilder = new ResponseBuilder(configs, storedMetadata);
   const response = await responseBuilder.toJSON();
-  response.metadata.lastUpdate = storedMetadata?.lastUpdate;
 
   // cache response
   const EXPIRE_AFTER = 15 * 60; //  15 minutes to seconds

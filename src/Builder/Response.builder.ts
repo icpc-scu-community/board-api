@@ -1,3 +1,4 @@
+import { ScraperType } from '../database/models';
 import { ConfigsType } from '../types';
 import { JsonBuilder } from './Json.builder';
 import { MetadataBuilder } from './Metadata.builder';
@@ -11,10 +12,10 @@ export class ResponseBuilder implements JsonBuilder {
   private metadataBuilder: MetadataBuilder;
   private submissionsBuilder: SubmissionsBuilder;
 
-  constructor({ groups, metadata, trainees }: ConfigsType) {
+  constructor({ groups, metadata, trainees }: ConfigsType, storedMetdata: ScraperType | null) {
     this.sheetsBuilder = new SheetsBuilder(groups);
     this.traineesBuilder = new TraineesBuilder(trainees);
-    this.metadataBuilder = new MetadataBuilder(metadata);
+    this.metadataBuilder = new MetadataBuilder(metadata, storedMetdata);
     this.submissionsBuilder = new SubmissionsBuilder();
   }
 
