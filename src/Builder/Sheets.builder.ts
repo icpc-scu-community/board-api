@@ -1,3 +1,4 @@
+import { BAD_REQUEST, HttpException } from '../core';
 import { ContestModel, ContestType } from '../database/models';
 import { GroupsType } from '../types';
 import { JsonBuilder } from './Json.builder';
@@ -30,6 +31,12 @@ export class SheetsBuilder implements JsonBuilder {
       { lean: true },
     );
     this._indexContests(contests);
+    const missingContests = this.allContests.filter((c) => !this._contestsIndexer[c]);
+    if (missingContests.length) {
+      throw new HttpException(BAD_REQUEST, {
+        message: `Contests: ${missingContests.join(', ')} are not stored in our DB`,
+      });
+    }
     console.timeEnd('SheetsBuilder.prepare');
   }
 
