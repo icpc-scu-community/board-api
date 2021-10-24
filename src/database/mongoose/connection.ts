@@ -1,7 +1,4 @@
 import mongoose from 'mongoose';
-import { duplicateKeyErrorHandler } from './plugins';
-
-mongoose.plugin(duplicateKeyErrorHandler);
 
 export async function openMongooseConnection(uri: string): Promise<void> {
   try {
