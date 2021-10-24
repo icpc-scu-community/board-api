@@ -14,7 +14,7 @@ export default endpoint({ query: { configs: urlValidator } }, async (req) => {
   console.timeEnd('query metadata');
 
   const configsUrl = req.query['configs'] as string;
-  const RESPONSE_ID = storedMetadata?.lastUpdate + configsUrl + Math.random();
+  const RESPONSE_ID = storedMetadata?.lastUpdate + configsUrl;
   const RESPONSE_ID_HASH_KEY = toSHA1base64(RESPONSE_ID);
   const cachedResponse = await redisClient.get(RESPONSE_ID_HASH_KEY);
   if (cachedResponse) {
@@ -36,7 +36,7 @@ export default endpoint({ query: { configs: urlValidator } }, async (req) => {
   }
   console.timeEnd('fetch json config');
 
-  // validate data from sheetsUrl & traineesUrl
+  // validate data from configs Url
   console.time('validate data in sheetsList & traineesList');
   configs = validate(configsValidator, configs);
   console.timeEnd('validate data in sheetsList & traineesList');
