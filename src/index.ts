@@ -4,11 +4,16 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import getData from './controllers/getData';
+import { HttpException, NOT_FOUND } from './core';
 import exceptionHandler from './core/exceptionHandler';
+import { openMongooseConnection } from './database/mongoose';
+import env from './env';
 
 const { PORT = 5000 } = process.env;
 
 (async () => {
+  await openMongooseConnection(env('MONGODB_URI'));
+
   const app = express();
   app.use(helmet());
   app.use(cors());
@@ -17,8 +22,8 @@ const { PORT = 5000 } = process.env;
 
   app.get('/', getData);
 
-  app.use('*', (_, res) => {
-    res.status(404).json({ message: 'Not found' });
+  app.use('*', () => {
+    throw new HttpException(NOT_FOUND, { message: 'Not Found' });
   });
 
   app.use(exceptionHandler);
