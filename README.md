@@ -1,17 +1,14 @@
 # Board Backend API
 
-The API processes the information stored in the database and returns it to
-frontend.
+The API processes the stored information (scraped submissions, contests, ...etc.) in the database and returns it in a ready to [view format](#response-format).
 
 ## Usage
 
 - Clone the repository
-- Create `.env` file and add the required variables in `.env.example`
 - Install the dependencies:  `npm install`
+- Create `.env` file and add the required variables from `.env.example`
 
 ### Development
-
-Run _Nodemon_ and binds to port `process.env.PORT || 5000`.
 
 ```bash
 npm run dev
@@ -19,13 +16,31 @@ npm run dev
 
 ## API
 
-### GET `/parse`
+### GET `/`
 
-required query variables:
-- **trainees-list**: URL that returns JSON in the following format.  
-e.g. https://api.jsonbin.io/b/5f67d6bd302a837e956a47bf
+> The root `/` endpoint is the only available endpoint.  
+> It returns all the required info to view the submissions summary.
+
+required query variable:
+
+- **configs**: a URL that returns JSON in the following format.  
+e.g. <https://api.jsonbin.io/b/617525ef9548541c29c7b9cc>
+
 ```json
-  [
+{
+  "metadata": {
+    "boardName": "Newcomers Training Board"
+  },
+  "groups": [
+    {
+      "id": "MWSDmqGsZm",
+      "contests": [
+        "219158",
+        219432
+      ]
+    }
+  ],
+  "trainees": [
     {
       "name": "Amr Salama",
       "handle": "AmrSalama"
@@ -35,20 +50,13 @@ e.g. https://api.jsonbin.io/b/5f67d6bd302a837e956a47bf
       "handle": "Kerolloz"
     }
   ]
+}
 ```
-- **sheets-list**: URL that returns JSON in the following format.  
-e.g. https://api.jsonbin.io/b/5f67d83e7243cd7e8240387c
-```json
-  [
-    "223338",
-    "223340"
-  ]
-```
----
+
+### Response Format
 
 Example:
 
-https://icpc-scu-board-api.herokuapp.com/parse?trainees-list=https://api.jsonbin.io/b/5f67d6bd302a837e956a47bf&sheets-list=https://api.jsonbin.io/b/5f67d83e7243cd7e8240387c
-
+<https://api.boardy.cf/?configs=https://api.jsonbin.io/b/617525ef9548541c29c7b9cc>
 
 Open the URL to see the response.
