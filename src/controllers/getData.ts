@@ -10,11 +10,11 @@ import { configsValidator, urlValidator, validate } from '../validator';
 export default endpoint({ query: { configs: urlValidator } }, async (req) => {
   // query metadata
   console.time('query metadata');
-  const sotredMetadata = await ScraperModel.findOne();
+  const storedMetadata = await ScraperModel.findOne();
   console.timeEnd('query metadata');
 
   const configsUrl = req.query['configs'] as string;
-  const RESPONSE_ID = sotredMetadata?.lastUpdate + configsUrl + Math.random();
+  const RESPONSE_ID = storedMetadata?.lastUpdate + configsUrl + Math.random();
   const RESPONSE_ID_HASH_KEY = toSHA1base64(RESPONSE_ID);
   const cachedResponse = await redisClient.get(RESPONSE_ID_HASH_KEY);
   if (cachedResponse) {
@@ -43,7 +43,7 @@ export default endpoint({ query: { configs: urlValidator } }, async (req) => {
 
   const responseBuilder = new ResponseBuilder(configs);
   const response = await responseBuilder.toJSON();
-  response.metadata.lastUpdate = sotredMetadata?.lastUpdate;
+  response.metadata.lastUpdate = storedMetadata?.lastUpdate;
 
   // cache response
   const EXPIRE_AFTER = 15 * 60; //  15 minutes to seconds
