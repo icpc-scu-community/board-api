@@ -12,7 +12,9 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 16
-    - name: npm install
-      run: npm i
+    # npm ci is used to install all exact version dependencies or devDependencies from a package-lock.json file.
+    # https://www.geeksforgeeks.org/difference-between-npm-i-and-npm-ci-in-node-js/
+    - name: npm ci
+      run: npm ci 
     - name: npm run build
       run: npm run build
