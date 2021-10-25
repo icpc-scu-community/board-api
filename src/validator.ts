@@ -34,7 +34,6 @@ const groupsListValidator = joi
 export const configsValidator = {
   groups: groupsListValidator,
   trainees: traineesListValidator,
-  metadata: joi.object({ boardName: joi.string().trim().required() }).required(),
 };
 
 /**

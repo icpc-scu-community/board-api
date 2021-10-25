@@ -10,7 +10,6 @@ export type SubmissionsType = {
 export type SheetsMapType = { [sheetId: string]: { [sheetIndex: string]: number } };
 export type GroupsType = { id: string; contests: number[] }[];
 export type TraineesType = { name: string; handle: string }[];
-export type MetadataType = { boardName: string };
 
 /**
  @example
@@ -27,13 +26,9 @@ export type MetadataType = { boardName: string };
         "handle": "Kerolloz"
       }
     ],
-    "metadata": {
-      "boardName": "Newcomers Training Board"
-    },
  }
 */
 export type ConfigsType = {
   groups: GroupsType;
   trainees: TraineesType;
-  metadata: MetadataType;
 };

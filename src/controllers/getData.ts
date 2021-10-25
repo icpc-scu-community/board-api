@@ -1,6 +1,6 @@
 import { ResponseBuilder } from '../Builder/Response.builder';
 import { BAD_REQUEST, endpoint, HttpException } from '../core';
-import { ScraperModel } from '../database/models';
+import { MetadataModel } from '../database/models';
 import redisClient from '../redis';
 import { RequestCache } from '../RequestCache';
 import { ConfigsType } from '../types';
@@ -10,11 +10,11 @@ import { configsValidator, urlValidator, validate } from '../validator';
 export default endpoint({ query: { configs: urlValidator } }, async (req) => {
   // query metadata
   console.time('query metadata');
-  const storedMetadata = await ScraperModel.findOne();
+  const storedMetadata = await MetadataModel.findOne();
   console.timeEnd('query metadata');
 
   const configsUrl = req.query['configs'] as string;
-  const RESPONSE_ID = storedMetadata?.lastUpdate + configsUrl;
+  const RESPONSE_ID = storedMetadata?.lastRun + configsUrl;
   const RESPONSE_ID_HASH_KEY = toSHA1base64(RESPONSE_ID);
   const cachedResponse = await redisClient.get(RESPONSE_ID_HASH_KEY);
   if (cachedResponse) {

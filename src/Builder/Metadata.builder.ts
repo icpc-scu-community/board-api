@@ -1,14 +1,10 @@
-import { ScraperType } from '../database/models';
-import { MetadataType } from '../types';
+import { MetadataType } from '../database/models';
 import { JsonBuilder } from './Json.builder';
 
-type MetadataResponse = { boardName: string; lastUpdate: number | null };
+type MetadataResponse = { lastRun: number | null };
 export class MetadataBuilder implements JsonBuilder {
-  constructor(private metadata: MetadataType, private storedMetadata: ScraperType | null) {}
+  constructor(private storedMetadata: MetadataType | null) {}
   toJSON(): MetadataResponse {
-    return {
-      boardName: this.metadata.boardName,
-      lastUpdate: this.storedMetadata?.lastUpdate || null,
-    };
+    return { lastRun: this.storedMetadata?.lastRun || null };
   }
 }
