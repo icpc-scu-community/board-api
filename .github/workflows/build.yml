@@ -1,0 +1,20 @@
+on:
+  push:
+  pull_request:
+
+jobs:
+  tsc:
+    name: build typescript
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install node 
+      uses: actions/setup-node@v1
+      with:
+        node-version: 16
+    # npm ci is used to install all exact version dependencies or devDependencies from a package-lock.json file.
+    # https://www.geeksforgeeks.org/difference-between-npm-i-and-npm-ci-in-node-js/
+    - name: npm ci
+      run: npm ci 
+    - name: npm run build
+      run: npm run build
