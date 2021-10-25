@@ -3,6 +3,8 @@ import redisClient from './redis';
 
 const EXPIRE_AFTER = 30 * 60; // 30 minutes in seconds
 export class RequestCache {
+  static HttpError = got.HTTPError;
+
   static async getJSON<T>(url: string): Promise<T> {
     const cachedResponse = await redisClient.get(url);
     if (cachedResponse) {

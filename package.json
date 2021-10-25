@@ -1,6 +1,6 @@
 {
-  "name": "newcomers-board-api",
-  "version": "0.1.0",
+  "name": "board-api",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
   "scripts": {

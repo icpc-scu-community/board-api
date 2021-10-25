@@ -29,10 +29,16 @@ export default endpoint({ query: { configs: urlValidator } }, async (req) => {
   try {
     configs = await RequestCache.getJSON<ConfigsType>(configsUrl);
   } catch (error) {
-    console.error(error);
-    throw new HttpException(BAD_REQUEST, {
-      message: 'invalid configs URL',
-    });
+    console.timeEnd('fetch json config');
+    if (error instanceof RequestCache.HttpError) {
+      console.log(error.message, configsUrl);
+      throw new HttpException(BAD_REQUEST, {
+        message: 'invalid configs URL',
+      });
+    } else {
+      console.error(error);
+      throw error;
+    }
   }
   console.timeEnd('fetch json config');
 
