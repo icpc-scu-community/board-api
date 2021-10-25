@@ -21,10 +21,10 @@ export class ResponseBuilder implements JsonBuilder {
 
   async toJSON() {
     console.time('ResponseBuilder.Promise.all.prepare');
-    this.traineesBuilder.prepare();
     await Promise.all([
-      await this.sheetsBuilder.prepare(),
-      await this.submissionsBuilder.prepare(this.traineesBuilder.allHandles, this.sheetsBuilder.allContests),
+      this.traineesBuilder.prepare(),
+      this.sheetsBuilder.prepare(),
+      this.submissionsBuilder.prepare(this.traineesBuilder.allHandles, this.sheetsBuilder.allContests),
     ]);
     console.timeEnd('ResponseBuilder.Promise.all.prepare');
 
