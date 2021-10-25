@@ -24,13 +24,10 @@ npm run dev
 required query variable:
 
 - **configs**: a URL that returns JSON in the following format.  
-e.g. <https://api.jsonbin.io/b/617525ef9548541c29c7b9cc>
+e.g. <https://api.jsonbin.io/b/6175e8fc9548541c29c80745>
 
 ```json
 {
-  "metadata": {
-    "boardName": "Newcomers Training Board"
-  },
   "groups": [
     {
       "id": "MWSDmqGsZm",
@@ -57,6 +54,6 @@ e.g. <https://api.jsonbin.io/b/617525ef9548541c29c7b9cc>
 
 Example:
 
-<https://api.boardy.cf/?configs=https://api.jsonbin.io/b/617525ef9548541c29c7b9cc>
+<https://api.boardy.cf/?configs=https://api.jsonbin.io/b/6175e8fc9548541c29c80745>
 
 Open the URL to see the response.
