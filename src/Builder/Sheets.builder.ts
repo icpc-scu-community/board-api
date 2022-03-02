@@ -57,6 +57,17 @@ export class SheetsBuilder implements JsonBuilder {
   }
 
   toJSON(): ContestResponse[] {
-    return Object.values(this._contestsIndexer);
+    return this._sortContests(Object.values(this._contestsIndexer));
+  }
+
+  private _sortContests(contests: ContestResponse[]): ContestResponse[] {
+    const indexedGroups = Object.fromEntries(Object.entries(this.allGroupsIds).map(([index, val]) => [val, +index]));
+    const indexedContests = Object.fromEntries(Object.entries(this.allContests).map(([index, val]) => [val, +index]));
+
+    return [...contests].sort((c1, c2) =>
+      indexedGroups[c1.groupId] === indexedGroups[c2.groupId]
+        ? indexedContests[c1.id] - indexedContests[c2.id]
+        : indexedGroups[c1.groupId] - indexedGroups[c2.groupId],
+    );
   }
 }
