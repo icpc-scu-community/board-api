@@ -35,6 +35,11 @@ export default endpoint({ query: { configs: urlValidator } }, async (req) => {
       throw new HttpException(BAD_REQUEST, {
         message: 'invalid configs URL',
       });
+    } else if (error instanceof RequestCache.RequestError) {
+      console.log(error.message, configsUrl);
+      throw new HttpException(BAD_REQUEST, {
+        message: 'invalid JSON configs URL',
+      });
     } else {
       console.error(error);
       throw error;
