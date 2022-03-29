@@ -9,6 +9,9 @@ class Submission {
   @prop({ required: true, unique: true })
   public id!: number;
 
+  @prop({ required: true })
+  public when!: Date;
+
   @prop({ required: true, lowercase: true, index: true })
   public handle!: string;
 
