@@ -5,6 +5,7 @@ import { MetadataBuilder } from './Metadata.builder';
 import { SheetsBuilder } from './Sheets.builder';
 import { SubmissionsBuilder } from './Submissions.builder';
 import { TraineesBuilder } from './Trainees.builder';
+import days from './days.json';
 
 export class ResponseBuilder implements JsonBuilder {
   private sheetsBuilder: SheetsBuilder;
@@ -29,9 +30,30 @@ export class ResponseBuilder implements JsonBuilder {
     console.timeEnd('ResponseBuilder.Promise.all.prepare');
 
     console.time('submissions-loop');
-    this.submissionsBuilder.submissions.forEach(({ contestId, handle, isAc, problem }) => {
+    this.submissionsBuilder.submissions.forEach(({ contestId, handle, isAc, problem, when }) => {
       const problemLetter = problem.split(' - ')[0]; // submission.problem is like "A - ProblemName"
       const problemId = `${contestId}-${problemLetter}`; // problemId is like "123-A"
+
+      /* ------- Ramadan Challenge Logic --------- */
+      // get the day when the current problem was released
+      const problemsDay = days[problemLetter as 'A'] as number;
+      const EG_TIMEZONE = new Date().toLocaleString('en-US', { timeZone: 'Africa/Cairo' });
+      const from = new Date(EG_TIMEZONE);
+      const to = new Date(EG_TIMEZONE);
+      const PM_10 = 22;
+      const APRIL = 4 - 1; // month is zero-based
+
+      from.setFullYear(2022, APRIL, problemsDay);
+      to.setFullYear(2022, APRIL, problemsDay + 1);
+
+      from.setHours(PM_10, 0, 0, 0);
+      to.setHours(PM_10, 0, 0, 0);
+
+      const submittedAt = when;
+      const shouldBeCounted = submittedAt >= from && submittedAt <= to;
+
+      if (!shouldBeCounted) return;
+      /* ------- Ramadan Challenge Logic --------- */
 
       this.traineesBuilder.incrementSubmissions(handle);
       // (first time the user tries this problem)

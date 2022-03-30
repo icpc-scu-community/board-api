@@ -18,7 +18,7 @@ export class SubmissionsBuilder implements JsonBuilder {
         contestId: { $in: contests },
         handle: { $in: handles },
       },
-      { _id: 0, id: 1, contestId: 1, handle: 1, problem: 1, isAc: 1 },
+      { _id: 0, id: 1, contestId: 1, handle: 1, problem: 1, isAc: 1, when: 1 },
       { lean: true },
     );
     this._indexSubmissions(handles);

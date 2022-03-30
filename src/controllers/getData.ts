@@ -1,20 +1,18 @@
 import { ResponseBuilder } from '../Builder/Response.builder';
-import { BAD_REQUEST, endpoint, HttpException } from '../core';
-import { MetadataModel } from '../database/models';
+import { endpoint } from '../core';
+import { ContestModel, MetadataModel, SubmissionModel } from '../database/models';
 import redisClient from '../redis';
-import { RequestCache } from '../RequestCache';
-import { ConfigsType } from '../types';
+import { CodeforcesAPI } from '../services/codeforces.api';
 import { toSHA1base64 } from '../utils';
-import { configsValidator, urlValidator, validate } from '../validator';
+import { configsValidator, validate } from '../validator';
 
-export default endpoint({ query: { configs: urlValidator } }, async (req) => {
+export default endpoint(async () => {
   // query metadata
   console.time('query metadata');
   const storedMetadata = await MetadataModel.findOne();
   console.timeEnd('query metadata');
 
-  const configsUrl = req.query['configs'] as string;
-  const RESPONSE_ID = storedMetadata?.lastRun + configsUrl;
+  const RESPONSE_ID = storedMetadata?.lastRun + '';
   const RESPONSE_ID_HASH_KEY = toSHA1base64(RESPONSE_ID);
   const cachedResponse = await redisClient.get(RESPONSE_ID_HASH_KEY);
   if (cachedResponse) {
@@ -23,34 +21,30 @@ export default endpoint({ query: { configs: urlValidator } }, async (req) => {
     return { content: JSON.parse(cachedResponse) };
   }
 
-  // start fetch json data
-  console.time('fetch json config');
-  let configs;
-  try {
-    configs = await RequestCache.getJSON<ConfigsType>(configsUrl);
-  } catch (error) {
-    console.timeEnd('fetch json config');
-    if (error instanceof RequestCache.HttpError) {
-      console.log(error.message, configsUrl);
-      throw new HttpException(BAD_REQUEST, {
-        message: 'invalid configs URL',
-      });
-    } else if (error instanceof RequestCache.RequestError) {
-      console.log(error.message, configsUrl);
-      throw new HttpException(BAD_REQUEST, {
-        message: 'invalid JSON configs URL',
-      });
-    } else {
-      console.error(error);
-      throw error;
-    }
-  }
-  console.timeEnd('fetch json config');
+  console.time('fetch unique handles from DB');
+  const uniqueTrainees = await SubmissionModel.distinct('handle');
+  console.timeEnd('fetch unique handles from DB');
+
+  console.time('fetch handles data (name) from Codeforces API');
+  const trainees = await CodeforcesAPI.getNamesFromHandles(uniqueTrainees);
+  console.timeEnd('fetch handles data (name) from Codeforces API');
+
+  // get all saved contests and group by groupId
+  const groups = await ContestModel.aggregate()
+    .group({
+      _id: '$groupId',
+      contests: { $push: '$id' },
+    })
+    .project({
+      _id: 0,
+      id: '$_id',
+      contests: 1,
+    });
 
   // validate data from configs Url
-  console.time('validate data in sheetsList & traineesList');
-  configs = validate(configsValidator, configs);
-  console.timeEnd('validate data in sheetsList & traineesList');
+  console.time('validate data in groupsList & traineesList');
+  const configs = validate(configsValidator, { groups, trainees });
+  console.timeEnd('validate data in groupsList & traineesList');
 
   const responseBuilder = new ResponseBuilder(configs, storedMetadata);
   const response = await responseBuilder.toJSON();
