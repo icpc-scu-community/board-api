@@ -40,14 +40,14 @@ export class ResponseBuilder implements JsonBuilder {
       const EG_TIMEZONE = new Date().toLocaleString('en-US', { timeZone: 'Africa/Cairo' });
       const from = new Date(EG_TIMEZONE);
       const to = new Date(EG_TIMEZONE);
-      const PM_10 = 22;
+      const PM_10 = 12 + 10 - 2; // 10:00 PM UTC
       const APRIL = 4 - 1; // month is zero-based
 
       from.setFullYear(2022, APRIL, problemsDay);
       to.setFullYear(2022, APRIL, problemsDay + 1);
 
-      from.setHours(PM_10, 0, 0, 0);
-      to.setHours(PM_10, 0, 0, 0);
+      from.setUTCHours(PM_10, 0, 0, 0);
+      to.setUTCHours(PM_10, 0, 0, 0);
 
       const submittedAt = when;
       const shouldBeCounted = submittedAt >= from && submittedAt <= to;
