@@ -1,7 +1,7 @@
 import got from 'got';
 import redisClient from './redis';
 
-const EXPIRE_AFTER = 30 * 60; // 30 minutes in seconds
+const EXPIRE_AFTER = 60 * 60; // 60 minutes in seconds
 export class RequestCache {
   static HttpError = got.HTTPError;
   static RequestError = got.RequestError;
