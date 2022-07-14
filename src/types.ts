@@ -28,7 +28,12 @@ export type TraineesType = { name: string; handle: string }[];
     ],
  }
 */
-export type ConfigsType = {
+
+export type RecordType = {
   groups: GroupsType;
   trainees: TraineesType;
+};
+
+export type ConfigsType = {
+  record: RecordType;
 };
