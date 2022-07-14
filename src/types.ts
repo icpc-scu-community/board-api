@@ -32,3 +32,7 @@ export type ConfigsType = {
   groups: GroupsType;
   trainees: TraineesType;
 };
+
+export type ResponseType = {
+  record: ConfigsType;
+};
