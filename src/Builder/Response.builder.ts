@@ -1,5 +1,5 @@
 import { MetadataType } from '../database/models';
-import { ConfigsType } from '../types';
+import { RecordType } from '../types';
 import { JsonBuilder } from './Json.builder';
 import { MetadataBuilder } from './Metadata.builder';
 import { SheetsBuilder } from './Sheets.builder';
@@ -12,7 +12,7 @@ export class ResponseBuilder implements JsonBuilder {
   private metadataBuilder: MetadataBuilder;
   private submissionsBuilder: SubmissionsBuilder;
 
-  constructor({ groups, trainees }: ConfigsType, storedMetdata: MetadataType | null) {
+  constructor({ groups, trainees }: RecordType, storedMetdata: MetadataType | null) {
     this.sheetsBuilder = new SheetsBuilder(groups);
     this.traineesBuilder = new TraineesBuilder(trainees);
     this.metadataBuilder = new MetadataBuilder(storedMetdata);
