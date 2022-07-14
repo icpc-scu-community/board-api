@@ -27,7 +27,7 @@ export default endpoint({ query: { configs: urlValidator } }, async (req) => {
   console.time('fetch json config');
   let configs;
   try {
-    configs = await RequestCache.getJSON<ConfigsType>(configsUrl);
+    configs = await RequestCache.getJSON<ConfigsType>(configsUrl.record);
   } catch (error) {
     console.timeEnd('fetch json config');
     if (error instanceof RequestCache.HttpError) {
