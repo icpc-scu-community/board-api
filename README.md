@@ -61,6 +61,6 @@ e.g. <https://api.jsonbin.io/v3/b/6175e8fc9548541c29c80745>
 
 Example:
 
-<https://api.boardy.cf/?configs=https://api.jsonbin.io/v3/b/6175e8fc9548541c29c80745>
+<https://api.boardy.tk/?configs=https://api.jsonbin.io/v3/b/6175e8fc9548541c29c80745>
 
 Open the URL to see the response.
