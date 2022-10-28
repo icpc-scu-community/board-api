@@ -8,9 +8,9 @@ function createRedisClient(REDIS_URI: string) {
   const client = createClient({ url: REDIS_URI });
   client
     .connect()
-    .then(() => console.log('connected to Redis!'))
+    .then(() => console.log('connected to Redis.'))
     .catch((err) => {
-      console.error(err);
+      console.error('ERROR connecting to Redis!', err);
       process.exit(1);
     });
   return client;
