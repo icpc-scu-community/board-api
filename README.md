@@ -1,5 +1,7 @@
 # Board Backend API
 
+[![.github/workflows/build.yml](https://github.com/icpc-scu-community/board-api/actions/workflows/build.yml/badge.svg)](https://github.com/icpc-scu-community/board-api/actions/workflows/build.yml)
+
 The API processes the stored information (scraped submissions, contests, ...etc.) in the database and returns it in a ready to [view format](#response-format).
 
 ## Usage
