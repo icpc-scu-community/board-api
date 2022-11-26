@@ -1,6 +1,6 @@
-# Board Backend API
+# Board Backend API <a target="_blank" href="https://kounter.tk"><img align="right" src="https://t.ly/yZs-" /></a>
 
-[![.github/workflows/build.yml](https://github.com/icpc-scu-community/board-api/actions/workflows/build.yml/badge.svg)](https://github.com/icpc-scu-community/board-api/actions/workflows/build.yml)
+[![.github/workflows/build.yml](https://github.com/icpc-scu-community/board-api/actions/workflows/build.yml/badge.svg)](https://github.com/icpc-scu-community/board-api/actions/workflows/build.yml) ![](https://img.shields.io/badge/contributions-welcome-green)
 
 The API processes the stored information (scraped submissions, contests, ...etc.) in the database and returns it in a ready to [view format](#response-format).
 
