@@ -32,12 +32,12 @@ export class SheetsBuilder implements JsonBuilder {
     );
     this._indexContests(contests);
     const missingContests = this.allContests.filter((c) => !this._contestsIndexer[c]);
+    console.timeEnd('SheetsBuilder.prepare');
     if (missingContests.length) {
       throw new HttpException(BAD_REQUEST, {
         message: `Contests: ${missingContests.join(', ')} are not stored in our DB`,
       });
     }
-    console.timeEnd('SheetsBuilder.prepare');
   }
 
   private _indexContests(contests: ContestType[]) {
