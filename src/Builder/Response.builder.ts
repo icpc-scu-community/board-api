@@ -1,11 +1,11 @@
 import { MetadataType } from '../database/models';
 import { ConfigsType } from '../types';
+import days from './days.json';
 import { JsonBuilder } from './Json.builder';
 import { MetadataBuilder } from './Metadata.builder';
 import { SheetsBuilder } from './Sheets.builder';
 import { SubmissionsBuilder } from './Submissions.builder';
 import { TraineesBuilder } from './Trainees.builder';
-import days from './days.json';
 
 export class ResponseBuilder implements JsonBuilder {
   private sheetsBuilder: SheetsBuilder;
@@ -41,10 +41,10 @@ export class ResponseBuilder implements JsonBuilder {
       const from = new Date(EG_TIMEZONE);
       const to = new Date(EG_TIMEZONE);
       const PM_10 = 12 + 10 - 2; // 10:00 PM UTC
-      const APRIL = 4 - 1; // month is zero-based
+      const MONTH = (problemsDay >= 24 ? 3 : 4) - 1; // month is zero-based
 
-      from.setFullYear(2022, APRIL, problemsDay);
-      to.setFullYear(2022, APRIL, problemsDay + 1);
+      from.setFullYear(2023, MONTH, problemsDay);
+      to.setFullYear(2023, MONTH, problemsDay + 1);
 
       from.setUTCHours(PM_10, 0, 0, 0);
       to.setUTCHours(PM_10, 0, 0, 0);
